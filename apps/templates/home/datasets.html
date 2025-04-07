@@ -1,0 +1,332 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Datasets {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+      <div class="container-fluid">
+        <div class="header-body">
+          <div class="row align-items-center py-4">
+            <div class="col-lg-6 col-7">
+              <h6 class="h2 text-white d-inline-block mb-0">Datasets</h6>
+              <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                  <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Datasets</li>
+                </ol>
+              </nav>
+            </div>
+            <div class="col-lg-6 col-5 text-right">
+              <a href="#" class="btn btn-sm btn-neutral" id="refreshDatasetsBtn">Refresh</a>
+              <a href="#" class="btn btn-sm btn-neutral" data-toggle="modal" data-target="#createDatasetModal">Create New</a>
+            </div>
+          </div>
+          
+          <!-- Card stats -->
+          <div class="row">
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Datasets</h5>
+                      <span class="h2 font-weight-bold mb-0" id="totalDatasets">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                        <i class="ni ni-active-40"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Active Datasets</h5>
+                      <span class="h2 font-weight-bold mb-0" id="activeDatasets">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                        <i class="ni ni-chart-pie-35"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Size</h5>
+                      <span class="h2 font-weight-bold mb-0" id="totalSize">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                        <i class="ni ni-money-coins"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Recent Updates</h5>
+                      <span class="h2 font-weight-bold mb-0" id="recentUpdates">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                        <i class="ni ni-chart-bar-32"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-header border-0">
+              <h3 class="mb-0">Your Datasets</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="datasetsTableBody">
+                  <!-- Table rows will be added dynamically -->
+                  <tr>
+                    <td colspan="6" class="text-center">Loading datasets...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer py-4">
+              <nav aria-label="...">
+                <ul class="pagination justify-content-end mb-0" id="datasetsPagination">
+                  <!-- Pagination will be added dynamically -->
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Dataset Modal -->
+      <div class="modal fade" id="createDatasetModal" tabindex="-1" role="dialog" aria-labelledby="createDatasetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="createDatasetModalLabel">Create New Dataset</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="createDatasetForm">
+                <div class="form-group">
+                  <label for="datasetName">Name</label>
+                  <input type="text" class="form-control" id="datasetName" placeholder="Enter dataset name" required>
+                </div>
+                <div class="form-group">
+                  <label for="datasetDescription">Description</label>
+                  <textarea class="form-control" id="datasetDescription" rows="3" placeholder="Enter dataset description"></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="datasetFile">Upload File</label>
+                  <input type="file" class="form-control-file" id="datasetFile">
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="createDatasetBtn">Create Dataset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include "includes/footer.html" %}
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+  <script src="/static/assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Fetch datasets
+        const fetchAndDisplayDatasets = async () => {
+          const datasets = await datasetsAPI.getAll();
+          
+          // Update stats
+          document.getElementById('totalDatasets').textContent = datasets.length || 0;
+          document.getElementById('activeDatasets').textContent = datasets.filter(d => d.status === 'active').length || 0;
+          
+          let totalSize = 0;
+          datasets.forEach(d => {
+            if (d.size) totalSize += d.size;
+          });
+          document.getElementById('totalSize').textContent = formatBytes(totalSize);
+          
+          // Get recent updates (last 7 days)
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+          const recentCount = datasets.filter(d => {
+            return new Date(d.created_at) > oneWeekAgo;
+          }).length;
+          document.getElementById('recentUpdates').textContent = recentCount;
+          
+          // Populate table
+          const tableBody = document.getElementById('datasetsTableBody');
+          if (datasets.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No datasets found</td></tr>';
+            return;
+          }
+          
+          tableBody.innerHTML = '';
+          datasets.forEach(dataset => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <th scope="row">
+                <div class="media align-items-center">
+                  <div class="media-body">
+                    <span class="name mb-0 text-sm">${dataset.name || 'Unnamed'}</span>
+                  </div>
+                </div>
+              </th>
+              <td>${dataset.description || 'No description'}</td>
+              <td>${formatBytes(dataset.size || 0)}</td>
+              <td>${formatDate(dataset.created_at)}</td>
+              <td>
+                <span class="badge badge-dot mr-4">
+                  <i class="bg-${getStatusColor(dataset.status)}"></i>
+                  <span class="status">${dataset.status || 'unknown'}</span>
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="dropdown">
+                  <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                    <a class="dropdown-item" href="#">View Details</a>
+                    <a class="dropdown-item" href="#">Edit</a>
+                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                  </div>
+                </div>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+        };
+
+        // Initial load
+        await fetchAndDisplayDatasets();
+        
+        // Refresh button
+        document.getElementById('refreshDatasetsBtn').addEventListener('click', async (e) => {
+          e.preventDefault();
+          await fetchAndDisplayDatasets();
+        });
+        
+        // Create dataset
+        document.getElementById('createDatasetBtn').addEventListener('click', async () => {
+          const name = document.getElementById('datasetName').value;
+          const description = document.getElementById('datasetDescription').value;
+          const fileInput = document.getElementById('datasetFile');
+          
+          if (!name) {
+            alert('Please enter a dataset name');
+            return;
+          }
+          
+          try {
+            // This is a simplified version - in a real app you'd handle file upload
+            const datasetData = {
+              name,
+              description,
+              has_file: fileInput.files.length > 0
+            };
+            
+            await datasetsAPI.create(datasetData);
+            $('#createDatasetModal').modal('hide');
+            await fetchAndDisplayDatasets();
+            
+            // Reset form
+            document.getElementById('createDatasetForm').reset();
+          } catch (error) {
+            alert('Error creating dataset: ' + error.message);
+          }
+        });
+      } catch (error) {
+        console.error('Failed to load datasets:', error);
+        document.getElementById('datasetsTableBody').innerHTML = 
+          `<tr><td colspan="6" class="text-center text-danger">Error loading datasets: ${error.message}</td></tr>`;
+      }
+    });
+    
+    // Helper functions
+    function formatBytes(bytes, decimals = 2) {
+      if (bytes === 0) return '0 Bytes';
+      
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+    
+    function formatDate(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    }
+    
+    function getStatusColor(status) {
+      switch (status) {
+        case 'active': return 'success';
+        case 'processing': return 'warning';
+        case 'error': return 'danger';
+        default: return 'primary';
+      }
+    }
+  </script>
+{% endblock javascripts %}

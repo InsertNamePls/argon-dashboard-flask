@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 """
-Copyright (c) 2019 - present AppSeed.us
+Thalos application configuration
 """
 
 import os
@@ -13,9 +13,16 @@ class Config(object):
     # Set up the App SECRET_KEY
     SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_007')
 
-    # This will create a file in <app> FOLDER
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
+    # SQLite database path (using mounted volume)
+    SQLALCHEMY_DATABASE_URI = config('SQLALCHEMY_DATABASE_URI', default='sqlite:////data/thalos.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # API Configuration
+    API_BASE_URL = config('API_BASE_URL', default='http://localhost:5000')
+    API_KEY = config('API_KEY', default=None)
+    
+    # Whether this instance only serves API requests
+    API_ONLY = False
 
 
 class ProductionConfig(Config):
@@ -26,15 +33,15 @@ class ProductionConfig(Config):
     REMEMBER_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_DURATION = 3600
 
-    # PostgreSQL database
-    SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
-        config('DB_ENGINE', default='postgresql'),
-        config('DB_USERNAME', default='appseed'),
-        config('DB_PASS', default='pass'),
-        config('DB_HOST', default='localhost'),
-        config('DB_PORT', default=5432),
-        config('DB_NAME', default='appseed-flask')
-    )
+    # PostgreSQL database (if needed in the future)
+    # SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(
+    #     config('DB_ENGINE', default='postgresql'),
+    #     config('DB_USERNAME', default='appseed'),
+    #     config('DB_PASS', default='pass'),
+    #     config('DB_HOST', default='localhost'),
+    #     config('DB_PORT', default=5432),
+    #     config('DB_NAME', default='appseed-flask')
+    # )
 
 
 class DebugConfig(Config):

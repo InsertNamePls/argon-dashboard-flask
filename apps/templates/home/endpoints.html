@@ -1,0 +1,587 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Endpoints {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+      <div class="container-fluid">
+        <div class="header-body">
+          <div class="row align-items-center py-4">
+            <div class="col-lg-6 col-7">
+              <h6 class="h2 text-white d-inline-block mb-0">Endpoints</h6>
+              <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                  <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Endpoints</li>
+                </ol>
+              </nav>
+            </div>
+            <div class="col-lg-6 col-5 text-right">
+              <a href="#" class="btn btn-sm btn-neutral" id="refreshEndpointsBtn">Refresh</a>
+              <a href="#" class="btn btn-sm btn-neutral" data-toggle="modal" data-target="#deployEndpointModal">Deploy New Endpoint</a>
+            </div>
+          </div>
+          
+          <!-- Card stats -->
+          <div class="row">
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Endpoints</h5>
+                      <span class="h2 font-weight-bold mb-0" id="totalEndpoints">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                        <i class="ni ni-world"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Active Endpoints</h5>
+                      <span class="h2 font-weight-bold mb-0" id="activeEndpoints">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                        <i class="ni ni-sound-wave"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Requests</h5>
+                      <span class="h2 font-weight-bold mb-0" id="totalRequests">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                        <i class="ni ni-send"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Avg Response Time</h5>
+                      <span class="h2 font-weight-bold mb-0" id="avgResponseTime">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                        <i class="ni ni-watch-time"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-header border-0">
+              <h3 class="mb-0">Your Endpoints</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">URL</th>
+                    <th scope="col">Model</th>
+                    <th scope="col">Requests (24h)</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="endpointsTableBody">
+                  <!-- Table rows will be added dynamically -->
+                  <tr>
+                    <td colspan="7" class="text-center">Loading endpoints...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer py-4">
+              <nav aria-label="...">
+                <ul class="pagination justify-content-end mb-0" id="endpointsPagination">
+                  <!-- Pagination will be added dynamically -->
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Calls -->
+      <div class="row mt-4">
+        <div class="col">
+          <div class="card">
+            <div class="card-header border-0">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h3 class="mb-0">Recent API Calls</h3>
+                </div>
+                <div class="col text-right">
+                  <a href="#!" class="btn btn-sm btn-primary">See all</a>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">Endpoint</th>
+                    <th scope="col">Request Time</th>
+                    <th scope="col">Response Time</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">IP Address</th>
+                  </tr>
+                </thead>
+                <tbody id="recentCallsTableBody">
+                  <!-- Table rows will be added dynamically -->
+                  <tr>
+                    <td colspan="5" class="text-center">Loading recent calls...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deploy Endpoint Modal -->
+      <div class="modal fade" id="deployEndpointModal" tabindex="-1" role="dialog" aria-labelledby="deployEndpointModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deployEndpointModalLabel">Deploy New Endpoint</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="deployEndpointForm">
+                <div class="form-group">
+                  <label for="endpointName">Name</label>
+                  <input type="text" class="form-control" id="endpointName" placeholder="Enter endpoint name" required>
+                </div>
+                <div class="form-group">
+                  <label for="modelSelect">Model</label>
+                  <select class="form-control" id="modelSelect" required>
+                    <option value="">Select model</option>
+                    <!-- Model options will be populated dynamically -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="endpointPath">URL Path</label>
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">/api/v1/</span>
+                    </div>
+                    <input type="text" class="form-control" id="endpointPath" placeholder="predict" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="scalingTier">Scaling Tier</label>
+                  <select class="form-control" id="scalingTier">
+                    <option value="basic">Basic (1 instance)</option>
+                    <option value="standard">Standard (auto-scaling 1-3)</option>
+                    <option value="premium">Premium (auto-scaling 3-10)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Authentication</label>
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="requireAuth" checked>
+                    <label class="custom-control-label" for="requireAuth">Require API Key</label>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="deployEndpointBtn">Deploy Endpoint</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test API Modal -->
+      <div class="modal fade" id="testApiModal" tabindex="-1" role="dialog" aria-labelledby="testApiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="testApiModalLabel">Test API Endpoint</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="apiRequestData">Request Data (JSON)</label>
+                    <textarea class="form-control" id="apiRequestData" rows="10" placeholder='{"data": [1, 2, 3]}'></textarea>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-block" id="sendApiRequestBtn">Send Request</button>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="apiResponseData">Response</label>
+                    <textarea class="form-control" id="apiResponseData" rows="10" readonly></textarea>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span id="apiResponseTime">Response Time: --</span>
+                    <span id="apiResponseStatus">Status: --</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include "includes/footer.html" %}
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+  <script src="/static/assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Selected endpoint for API testing
+        let selectedEndpointId = null;
+        
+        // Fetch endpoints
+        const fetchAndDisplayEndpoints = async () => {
+          const endpoints = await endpointsAPI.getAll();
+          
+          // Update stats
+          document.getElementById('totalEndpoints').textContent = endpoints.length || 0;
+          document.getElementById('activeEndpoints').textContent = endpoints.filter(e => e.status === 'active').length || 0;
+          
+          // Sum up total requests
+          let totalRequests = 0;
+          endpoints.forEach(endpoint => {
+            if (endpoint.requests_count) totalRequests += endpoint.requests_count;
+          });
+          document.getElementById('totalRequests').textContent = totalRequests.toLocaleString();
+          
+          // Calculate average response time
+          const activeEndpoints = endpoints.filter(e => e.avg_response_time);
+          let avgResponseTime = 0;
+          if (activeEndpoints.length > 0) {
+            const totalTime = activeEndpoints.reduce((sum, endpoint) => sum + endpoint.avg_response_time, 0);
+            avgResponseTime = totalTime / activeEndpoints.length;
+          }
+          document.getElementById('avgResponseTime').textContent = avgResponseTime ? `${avgResponseTime.toFixed(2)}ms` : 'N/A';
+          
+          // Populate table
+          const tableBody = document.getElementById('endpointsTableBody');
+          if (endpoints.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No endpoints found</td></tr>';
+            return;
+          }
+          
+          tableBody.innerHTML = '';
+          endpoints.forEach(endpoint => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <th scope="row">
+                <div class="media align-items-center">
+                  <div class="media-body">
+                    <span class="name mb-0 text-sm">${endpoint.name || 'Unnamed'}</span>
+                  </div>
+                </div>
+              </th>
+              <td><code>${endpoint.url || 'N/A'}</code></td>
+              <td>${endpoint.model_name || 'N/A'}</td>
+              <td>${endpoint.requests_24h?.toLocaleString() || '0'}</td>
+              <td>${formatDate(endpoint.created_at)}</td>
+              <td>
+                <span class="badge badge-dot mr-4">
+                  <i class="bg-${getStatusColor(endpoint.status)}"></i>
+                  <span class="status">${endpoint.status || 'unknown'}</span>
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="dropdown">
+                  <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                    <a class="dropdown-item test-api-btn" href="#" data-endpoint-id="${endpoint.id}">Test API</a>
+                    <a class="dropdown-item" href="#">View Metrics</a>
+                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                  </div>
+                </div>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+          
+          // Add event listeners for test API buttons
+          document.querySelectorAll('.test-api-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              selectedEndpointId = btn.dataset.endpointId;
+              
+              // Find endpoint details
+              const endpoint = endpoints.find(e => e.id === selectedEndpointId);
+              if (endpoint) {
+                // Update modal title with endpoint name
+                document.getElementById('testApiModalLabel').textContent = `Test API: ${endpoint.name}`;
+                
+                // Show test modal
+                $('#testApiModal').modal('show');
+              }
+            });
+          });
+        };
+        
+        // Fetch recent API calls
+        const fetchRecentCalls = async () => {
+          try {
+            // This is a mock function - in a real app you'd fetch from your API
+            // We'll simulate some data for demonstration
+            const recentCalls = [
+              { endpoint_name: 'Image Classification API', request_time: '2023-10-15T14:32:45', response_time: 120, status: 'success', ip: '192.168.1.102' },
+              { endpoint_name: 'Text Sentiment API', request_time: '2023-10-15T14:30:22', response_time: 85, status: 'success', ip: '192.168.1.105' },
+              { endpoint_name: 'Customer Churn Predictor', request_time: '2023-10-15T14:28:10', response_time: 210, status: 'success', ip: '192.168.1.110' },
+              { endpoint_name: 'Product Recommendation API', request_time: '2023-10-15T14:25:55', response_time: 150, status: 'error', ip: '192.168.1.108' },
+              { endpoint_name: 'Text Sentiment API', request_time: '2023-10-15T14:22:30', response_time: 95, status: 'success', ip: '192.168.1.103' }
+            ];
+            
+            const tableBody = document.getElementById('recentCallsTableBody');
+            if (recentCalls.length === 0) {
+              tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No recent API calls</td></tr>';
+              return;
+            }
+            
+            tableBody.innerHTML = '';
+            recentCalls.forEach(call => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <th scope="row">${call.endpoint_name}</th>
+                <td>${formatDateTime(call.request_time)}</td>
+                <td>${call.response_time}ms</td>
+                <td>
+                  <span class="badge badge-dot mr-4">
+                    <i class="bg-${call.status === 'success' ? 'success' : 'danger'}"></i>
+                    <span class="status">${call.status}</span>
+                  </span>
+                </td>
+                <td>${call.ip}</td>
+              `;
+              tableBody.appendChild(row);
+            });
+          } catch (error) {
+            console.error('Failed to load recent calls:', error);
+            document.getElementById('recentCallsTableBody').innerHTML = 
+              `<tr><td colspan="5" class="text-center text-danger">Error loading recent calls: ${error.message}</td></tr>`;
+          }
+        };
+
+        // Fetch models for the endpoint deployment form
+        const populateModelDropdown = async () => {
+          try {
+            const models = await modelsAPI.getAll();
+            const modelSelect = document.getElementById('modelSelect');
+            
+            // Clear existing options except the first one
+            while (modelSelect.options.length > 1) {
+              modelSelect.remove(1);
+            }
+            
+            // Add model options (only models that are ready for deployment)
+            const deployableModels = models.filter(model => 
+              model.status === 'ready' || model.status === 'deployed');
+              
+            deployableModels.forEach(model => {
+              const option = document.createElement('option');
+              option.value = model.id;
+              option.textContent = model.name;
+              modelSelect.appendChild(option);
+            });
+            
+            if (deployableModels.length === 0) {
+              const option = document.createElement('option');
+              option.disabled = true;
+              option.textContent = 'No deployable models available';
+              modelSelect.appendChild(option);
+            }
+          } catch (error) {
+            console.error('Failed to load models for dropdown:', error);
+          }
+        };
+
+        // Initial load
+        await fetchAndDisplayEndpoints();
+        await fetchRecentCalls();
+        await populateModelDropdown();
+        
+        // Refresh button
+        document.getElementById('refreshEndpointsBtn').addEventListener('click', async (e) => {
+          e.preventDefault();
+          await fetchAndDisplayEndpoints();
+          await fetchRecentCalls();
+        });
+        
+        // Deploy endpoint
+        document.getElementById('deployEndpointBtn').addEventListener('click', async () => {
+          const name = document.getElementById('endpointName').value;
+          const modelId = document.getElementById('modelSelect').value;
+          const path = document.getElementById('endpointPath').value;
+          const scalingTier = document.getElementById('scalingTier').value;
+          const requireAuth = document.getElementById('requireAuth').checked;
+          
+          if (!name || !modelId || !path) {
+            alert('Please fill all required fields');
+            return;
+          }
+          
+          try {
+            const deploymentData = {
+              name,
+              model_id: modelId,
+              path,
+              scaling_tier: scalingTier,
+              require_auth: requireAuth
+            };
+            
+            await endpointsAPI.deploy(deploymentData);
+            $('#deployEndpointModal').modal('hide');
+            await fetchAndDisplayEndpoints();
+            
+            // Reset form
+            document.getElementById('deployEndpointForm').reset();
+          } catch (error) {
+            alert('Error deploying endpoint: ' + error.message);
+          }
+        });
+        
+        // Send API test request
+        document.getElementById('sendApiRequestBtn').addEventListener('click', async () => {
+          if (!selectedEndpointId) return;
+          
+          const requestDataEl = document.getElementById('apiRequestData');
+          const responseDataEl = document.getElementById('apiResponseData');
+          const responseTimeEl = document.getElementById('apiResponseTime');
+          const responseStatusEl = document.getElementById('apiResponseStatus');
+          
+          let requestData;
+          try {
+            requestData = JSON.parse(requestDataEl.value);
+          } catch (error) {
+            responseDataEl.value = 'Invalid JSON in request data';
+            responseStatusEl.textContent = 'Status: Error';
+            return;
+          }
+          
+          try {
+            responseDataEl.value = 'Sending request...';
+            responseTimeEl.textContent = 'Response Time: --';
+            responseStatusEl.textContent = 'Status: Pending';
+            
+            const startTime = performance.now();
+            const response = await endpointsAPI.invoke(selectedEndpointId, requestData);
+            const endTime = performance.now();
+            
+            const responseTime = Math.round(endTime - startTime);
+            responseDataEl.value = JSON.stringify(response, null, 2);
+            responseTimeEl.textContent = `Response Time: ${responseTime}ms`;
+            responseStatusEl.textContent = 'Status: Success';
+          } catch (error) {
+            responseDataEl.value = `Error: ${error.message}`;
+            responseStatusEl.textContent = 'Status: Error';
+          }
+        });
+        
+        // Prefill test API with sample data when showing modal
+        $('#testApiModal').on('show.bs.modal', () => {
+          if (!document.getElementById('apiRequestData').value) {
+            document.getElementById('apiRequestData').value = JSON.stringify({
+              data: {
+                features: [0.5, 1.2, 0.8, 2.1]
+              }
+            }, null, 2);
+          }
+          document.getElementById('apiResponseData').value = '';
+          document.getElementById('apiResponseTime').textContent = 'Response Time: --';
+          document.getElementById('apiResponseStatus').textContent = 'Status: --';
+        });
+        
+        // Show models when opening the deployment modal
+        $('#deployEndpointModal').on('show.bs.modal', async () => {
+          await populateModelDropdown();
+        });
+      } catch (error) {
+        console.error('Failed to load endpoints:', error);
+        document.getElementById('endpointsTableBody').innerHTML = 
+          `<tr><td colspan="7" class="text-center text-danger">Error loading endpoints: ${error.message}</td></tr>`;
+      }
+    });
+    
+    // Helper functions
+    function formatDate(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    }
+    
+    function formatDateTime(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    }
+    
+    function getStatusColor(status) {
+      switch (status) {
+        case 'active': return 'success';
+        case 'deploying': return 'warning';
+        case 'error': return 'danger';
+        default: return 'primary';
+      }
+    }
+  </script>
+{% endblock javascripts %}

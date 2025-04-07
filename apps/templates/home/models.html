@@ -1,0 +1,387 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Models {% endblock title %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+      <div class="container-fluid">
+        <div class="header-body">
+          <div class="row align-items-center py-4">
+            <div class="col-lg-6 col-7">
+              <h6 class="h2 text-white d-inline-block mb-0">Models</h6>
+              <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+                <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                  <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Models</li>
+                </ol>
+              </nav>
+            </div>
+            <div class="col-lg-6 col-5 text-right">
+              <a href="#" class="btn btn-sm btn-neutral" id="refreshModelsBtn">Refresh</a>
+              <a href="#" class="btn btn-sm btn-neutral" data-toggle="modal" data-target="#trainModelModal">Train New Model</a>
+            </div>
+          </div>
+          
+          <!-- Card stats -->
+          <div class="row">
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Total Models</h5>
+                      <span class="h2 font-weight-bold mb-0" id="totalModels">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                        <i class="ni ni-atom"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Deployed Models</h5>
+                      <span class="h2 font-weight-bold mb-0" id="deployedModels">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                        <i class="ni ni-cloud-upload-96"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Training</h5>
+                      <span class="h2 font-weight-bold mb-0" id="trainingModels">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                        <i class="ni ni-settings"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+              <div class="card card-stats">
+                <!-- Card body -->
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h5 class="card-title text-uppercase text-muted mb-0">Average Accuracy</h5>
+                      <span class="h2 font-weight-bold mb-0" id="avgAccuracy">--</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                        <i class="ni ni-chart-bar-32"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+      <div class="row">
+        <div class="col">
+          <div class="card">
+            <div class="card-header border-0">
+              <h3 class="mb-0">Your Models</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-items-center table-flush">
+                <thead class="thead-light">
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Accuracy</th>
+                    <th scope="col">Dataset</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="modelsTableBody">
+                  <!-- Table rows will be added dynamically -->
+                  <tr>
+                    <td colspan="7" class="text-center">Loading models...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer py-4">
+              <nav aria-label="...">
+                <ul class="pagination justify-content-end mb-0" id="modelsPagination">
+                  <!-- Pagination will be added dynamically -->
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Train Model Modal -->
+      <div class="modal fade" id="trainModelModal" tabindex="-1" role="dialog" aria-labelledby="trainModelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="trainModelModalLabel">Train New Model</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="trainModelForm">
+                <div class="form-group">
+                  <label for="modelName">Name</label>
+                  <input type="text" class="form-control" id="modelName" placeholder="Enter model name" required>
+                </div>
+                <div class="form-group">
+                  <label for="modelType">Model Type</label>
+                  <select class="form-control" id="modelType" required>
+                    <option value="">Select model type</option>
+                    <option value="classification">Classification</option>
+                    <option value="regression">Regression</option>
+                    <option value="clustering">Clustering</option>
+                    <option value="nlp">Natural Language Processing</option>
+                    <option value="timeseries">Time Series</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="datasetSelect">Dataset</label>
+                  <select class="form-control" id="datasetSelect" required>
+                    <option value="">Select dataset</option>
+                    <!-- Dataset options will be populated dynamically -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="modelParameters">Parameters (JSON)</label>
+                  <textarea class="form-control" id="modelParameters" rows="3" placeholder="Enter model parameters as JSON"></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="trainModelBtn">Start Training</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% include "includes/footer.html" %}
+    </div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}
+  <script src="/static/assets/js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Fetch models
+        const fetchAndDisplayModels = async () => {
+          const models = await modelsAPI.getAll();
+          
+          // Update stats
+          document.getElementById('totalModels').textContent = models.length || 0;
+          document.getElementById('deployedModels').textContent = models.filter(m => m.status === 'deployed').length || 0;
+          document.getElementById('trainingModels').textContent = models.filter(m => m.status === 'training').length || 0;
+          
+          // Calculate average accuracy
+          const accuracyModels = models.filter(m => m.accuracy !== undefined && m.accuracy !== null);
+          let avgAccuracy = 0;
+          if (accuracyModels.length > 0) {
+            const totalAccuracy = accuracyModels.reduce((sum, model) => sum + model.accuracy, 0);
+            avgAccuracy = totalAccuracy / accuracyModels.length;
+          }
+          document.getElementById('avgAccuracy').textContent = avgAccuracy ? `${avgAccuracy.toFixed(2)}%` : 'N/A';
+          
+          // Populate table
+          const tableBody = document.getElementById('modelsTableBody');
+          if (models.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No models found</td></tr>';
+            return;
+          }
+          
+          tableBody.innerHTML = '';
+          models.forEach(model => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <th scope="row">
+                <div class="media align-items-center">
+                  <div class="media-body">
+                    <span class="name mb-0 text-sm">${model.name || 'Unnamed'}</span>
+                  </div>
+                </div>
+              </th>
+              <td>${model.type || 'Unknown'}</td>
+              <td>${model.accuracy ? `${model.accuracy.toFixed(2)}%` : 'N/A'}</td>
+              <td>${model.dataset_name || 'N/A'}</td>
+              <td>${formatDate(model.created_at)}</td>
+              <td>
+                <span class="badge badge-dot mr-4">
+                  <i class="bg-${getStatusColor(model.status)}"></i>
+                  <span class="status">${model.status || 'unknown'}</span>
+                </span>
+              </td>
+              <td class="text-right">
+                <div class="dropdown">
+                  <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                    <a class="dropdown-item" href="#">View Details</a>
+                    <a class="dropdown-item deploy-model-btn" href="#" data-model-id="${model.id}">Deploy</a>
+                    <a class="dropdown-item text-danger" href="#">Delete</a>
+                  </div>
+                </div>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+          
+          // Add event listeners for deploy buttons
+          document.querySelectorAll('.deploy-model-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const modelId = btn.dataset.modelId;
+              try {
+                // This is a simplified version - in a real app you'd have a proper deployment flow
+                alert(`Deploying model ${modelId}. This would open a deployment form in a real application.`);
+              } catch (error) {
+                alert('Error deploying model: ' + error.message);
+              }
+            });
+          });
+        };
+
+        // Fetch datasets for the model training form
+        const populateDatasetDropdown = async () => {
+          try {
+            const datasets = await datasetsAPI.getAll();
+            const datasetSelect = document.getElementById('datasetSelect');
+            
+            // Clear existing options except the first one
+            while (datasetSelect.options.length > 1) {
+              datasetSelect.remove(1);
+            }
+            
+            // Add dataset options
+            datasets.forEach(dataset => {
+              const option = document.createElement('option');
+              option.value = dataset.id;
+              option.textContent = dataset.name;
+              datasetSelect.appendChild(option);
+            });
+          } catch (error) {
+            console.error('Failed to load datasets for dropdown:', error);
+          }
+        };
+
+        // Initial load
+        await fetchAndDisplayModels();
+        await populateDatasetDropdown();
+        
+        // Refresh button
+        document.getElementById('refreshModelsBtn').addEventListener('click', async (e) => {
+          e.preventDefault();
+          await fetchAndDisplayModels();
+        });
+        
+        // Train model
+        document.getElementById('trainModelBtn').addEventListener('click', async () => {
+          const name = document.getElementById('modelName').value;
+          const type = document.getElementById('modelType').value;
+          const datasetId = document.getElementById('datasetSelect').value;
+          let parameters = {};
+          
+          try {
+            const parametersText = document.getElementById('modelParameters').value;
+            if (parametersText) {
+              parameters = JSON.parse(parametersText);
+            }
+          } catch (error) {
+            alert('Invalid JSON in parameters field');
+            return;
+          }
+          
+          if (!name || !type || !datasetId) {
+            alert('Please fill all required fields');
+            return;
+          }
+          
+          try {
+            const trainingData = {
+              name,
+              type,
+              dataset_id: datasetId,
+              parameters
+            };
+            
+            await modelsAPI.train(trainingData);
+            $('#trainModelModal').modal('hide');
+            await fetchAndDisplayModels();
+            
+            // Reset form
+            document.getElementById('trainModelForm').reset();
+          } catch (error) {
+            alert('Error training model: ' + error.message);
+          }
+        });
+        
+        // Show datasets when opening the training modal
+        $('#trainModelModal').on('show.bs.modal', async () => {
+          await populateDatasetDropdown();
+        });
+      } catch (error) {
+        console.error('Failed to load models:', error);
+        document.getElementById('modelsTableBody').innerHTML = 
+          `<tr><td colspan="7" class="text-center text-danger">Error loading models: ${error.message}</td></tr>`;
+      }
+    });
+    
+    // Helper functions
+    function formatDate(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    }
+    
+    function getStatusColor(status) {
+      switch (status) {
+        case 'deployed': return 'success';
+        case 'training': return 'warning';
+        case 'ready': return 'info';
+        case 'error': return 'danger';
+        default: return 'primary';
+      }
+    }
+  </script>
+{% endblock javascripts %}
